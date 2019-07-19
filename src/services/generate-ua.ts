@@ -4,7 +4,7 @@ import { WeigthObj, getRandomItem } from '../utils/common'
 
 const chineseUas: WeigthObj[] = [
   {
-    weigth: 20,
+    weigth: 15,
     value: `360SE`
   },
   {
@@ -29,15 +29,21 @@ const chineseUas: WeigthObj[] = [
   },
   {
     value: ``,
-    weigth: 50
+    weigth: 45
   }
 ]
+
+const randomBetween = (begin: number, end: number) => {
+  const randomNum = Math.round(begin * Math.random())
+  return randomNum + end - begin
+}
 
 export const generateUserAgent = () => {
   let ua = ''
   const chineseUa: string = getRandomItem(chineseUas)
   if (chineseUa) {
     ua = `${faker.internet.userAgent()} ${chineseUa}`
+    ua = ua.replace(/Chrome\/\d{2}/, `Chrome/${randomBetween(40, 75)}`)
   } else {
     ua = new UserAgent({
       platform: 'Win32'
