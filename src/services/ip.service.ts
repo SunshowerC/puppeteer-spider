@@ -9,7 +9,7 @@ export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) =>
   const keys = ['addr', 'avaliable', 'createtimestamp', 'updatetimestamp']
 
   const valuesStr = ips
-    .map((ip) => `("${ip.addr}", ${ip.avaliable || 1}, ${now}, ${now})`)
+    .map((ip) => `("${ip.addr}", ${ip.avaliable === 0 ? 0 : 1}, ${now}, ${now})`)
     .join(',')
 
   const saveRes = await connnect.query(`

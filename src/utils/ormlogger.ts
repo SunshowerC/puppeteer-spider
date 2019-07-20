@@ -55,9 +55,9 @@ export class OrmLogger implements Logger {
       (this.options instanceof Array && this.options.indexOf('query') !== -1)
     ) {
       // 排除 插入的日志，因为批量插入 sql 字段太 tm 长了
-      if (query.startsWith('INSERT INTO')) {
-        return false
-      }
+      // if (query.startsWith('INSERT INTO')) {
+      //   return false
+      // }
       const sql =
         query +
         (parameters && parameters.length

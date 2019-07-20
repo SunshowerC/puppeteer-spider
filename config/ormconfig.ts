@@ -2,7 +2,7 @@ import config from './config.json'
 import appRoot from 'app-root-path'
 import { resolve } from 'path';
 import typeorm, {ConnectionOptions} from 'typeorm'
-import { OrmLogger } from 'src/utils/ormlogger.js';
+import { OrmLogger } from '../src/utils/ormlogger';
 
 export const ormconfig: ConnectionOptions = {
   type: 'mysql',
