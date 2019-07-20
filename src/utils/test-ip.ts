@@ -19,7 +19,7 @@ export const testIp = async (proxyAddr: string): Promise<TestResult> => {
       (error, response, body) => {
         if (error) {
           logger.warn(`${ip} testIp failed`, {
-            error
+            error: error.code
           })
           resolve({
             avaliable: AvaliableEnum.False,

@@ -1,25 +1,15 @@
-import puppeteer from 'puppeteer'
-import { createConnection } from 'typeorm'
-import { ormconfig } from 'config/ormconfig'
+import { Page } from 'puppeteer'
+import { Connection } from 'typeorm'
 import { sleep } from '../utils/common'
 import logger from '../services/logger'
 import { saveAvaliableIps } from '../utils/test-ip'
 
 const getIpPage = (num) => `http://www.xiladaili.com/gaoni/${num}/`
 
-export async function getIpFromXila() {
-  const connection = await createConnection(ormconfig)
-
-  const browser = await puppeteer.launch({
-    // headless: false,
-    // devtools: true,
-    // slowMo: 300
-  })
-
-  const page = await browser.newPage()
-  const pages = 20
+export async function getIpFromXila(page: Page, connection: Connection) {
+  // 自增页码
   let i = 0
-  while (i < pages) {
+  while (true) {
     i++
     await page.goto(getIpPage(i), {
       waitUntil: 'networkidle2'
@@ -36,13 +26,11 @@ export async function getIpFromXila() {
     const avaliableLen = await saveAvaliableIps(connection, ips)
 
     // 有效 ip 太少，别爬了
-    if (avaliableLen < 5) {
-      logger.info('爬取西拉代理完毕！')
+    if (avaliableLen === 0) {
+      logger.info(`爬取西拉代理完毕 总共 ${i} 页！！`)
       break
     }
 
     await sleep(1000)
   }
-
-  await browser.close()
 }
