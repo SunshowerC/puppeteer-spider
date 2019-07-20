@@ -1,26 +1,28 @@
 import request from 'request'
+import logger from 'src/services/logger'
 
 const testPath = `http://icanhazip.com/`
 export const testIp = async (proxyAddr: string) => {
   const ip = proxyAddr.startsWith('http') ? proxyAddr : `http://${proxyAddr}`
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     request.get(
       testPath,
       {
-        proxy: ip,
-        timeout: 20000
+        proxy: ip.trim(),
+        timeout: 10000
       },
       (error, response, body) => {
         if (error) {
-          console.log('error', error)
-          reject(error)
+          logger.warn(`${ip} testIp failed`, {
+            error
+          })
+          resolve(false)
         } else {
-          console.log(body, 'validate result:', ip.includes(body.trim()))
-          resolve(ip.includes(body.trim()))
+          const valid = ip.includes(body.trim())
+          logger.info(`${ip} validate result:${valid}`)
+          resolve(valid)
         }
       }
     )
   })
 }
-
-testIp('1.179.185.249:8080')

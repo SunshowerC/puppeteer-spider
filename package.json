@@ -59,6 +59,8 @@
     "puppeteer": "^1.18.1",
     "request": "^2.88.0",
     "typeorm": "^0.2.18",
-    "user-agents": "^1.0.321"
+    "user-agents": "^1.0.321",
+    "winston": "^3.2.1",
+    "winston-daily-rotate-file": "^3.10.0"
   }
 }

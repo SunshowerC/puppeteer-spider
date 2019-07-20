@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer'
 import { sleep } from './utils/common'
 import { generateUserAgent } from './services/generate-ua'
+import logger from './services/logger'
 
 async function main() {
   const browser = await puppeteer.launch({
@@ -12,7 +13,9 @@ async function main() {
   const page = await browser.newPage()
   // page.on('console', (msg) => console.log('PAGE LOG:', msg.text()))
   const ua = generateUserAgent()
-  console.log('ua', ua)
+
+  logger.info(`ua: ${ua}`)
+
   await page.setUserAgent(ua)
 
   await page.goto(

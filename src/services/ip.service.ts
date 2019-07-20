@@ -1,5 +1,6 @@
 import { Connection } from 'typeorm'
 import { IpEntity } from 'config/entities/ip.entity'
+import logger from './logger'
 
 export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) => {
   // const ipEntitys = ips.map(item => new IpEntity(item))
@@ -23,6 +24,8 @@ export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) =>
       updatetimestamp = VALUES(updatetimestamp);  
   `)
 
-  console.log('saveRes', saveRes)
+  logger.info('saveIps Result', {
+    result: saveRes
+  })
   return saveRes
 }

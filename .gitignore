@@ -7,6 +7,8 @@ yarn-debug.log*
 yarn-error.log*
 ormlogs.log*
 *.log
+*.log.*
+logs/
 
 # Editor directories and files
 .idea

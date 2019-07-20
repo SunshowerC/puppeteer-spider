@@ -1,3 +1,5 @@
+import logger from 'src/services/logger'
+
 export const sleep = (duration: number) => {
   return new Promise((resolve) => {
     setTimeout(resolve, duration)
@@ -18,6 +20,5 @@ export const getRandomItem = (arr: WeigthObj[]): WeigthObj['value'] => {
     }
     randomNum -= item.weigth
   }
-  console.log('arr', arr)
-  throw new Error('未知错误')
+  logger.error('getRandomItem 未知错误', arr)
 }

@@ -2,6 +2,7 @@ import puppeteer from 'puppeteer'
 import { sleep } from 'src/utils/common'
 import { createConnection } from 'typeorm'
 import { ormconfig } from 'config/ormconfig'
+import logger from 'src/services/logger'
 import { saveIps } from '../services/ip.service'
 
 const getIpPage = (num) => `http://www.xiladaili.com/gaoni/${num}/`
@@ -30,7 +31,7 @@ export async function getIpFromXila() {
       return ipsFromElem
     })
 
-    console.log(`ips`, ips.length, ips)
+    logger.info(`ips`, ips.length, ips)
 
     saveIps(connection, ips.map((item) => ({ addr: item })))
 
