@@ -28,6 +28,14 @@ export class IpEntity extends BaseEntity {
     default: AvaliableEnum.True
   })
   avaliable: number
+
+
+  // 已下载了的资源 id， 逗号切分 
+  @Column({
+    type: 'varchar',
+    default: ''
+  })
+  downloaded: string
 } 
 
 

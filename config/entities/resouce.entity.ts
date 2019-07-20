@@ -25,6 +25,7 @@ export class ResourceEntity extends BaseEntity {
   })
   visit: number
 
+  // 被下载的次数
   @Column({
     type: 'int'
   })
