@@ -1,5 +1,5 @@
 import { Connection } from 'typeorm'
-import { IpEntity } from 'config/entities/ip.entity'
+import { IpEntity, AvaliableEnum } from 'config/entities/ip.entity'
 import logger from './logger'
 
 // 保存ip 到数据库
@@ -7,10 +7,12 @@ export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) =>
   // const ipEntitys = ips.map(item => new IpEntity(item))
   const now = Math.floor(Date.now() / 1000)
 
-  const keys = ['addr', 'avaliable', 'createtimestamp', 'updatetimestamp']
+  const keys = ['addr', 'avaliable', 'origin', 'createtimestamp', 'updatetimestamp']
 
   const valuesStr = ips
-    .map((ip) => `("${ip.addr}", ${ip.avaliable === 0 ? 0 : 1}, ${now}, ${now})`)
+    .map(
+      (ip) => `("${ip.addr}", ${ip.avaliable === 0 ? 0 : 1}, "${ip.origin || ''}", ${now}, ${now})`
+    )
     .join(',')
 
   const saveRes = await connnect.query(`
@@ -37,6 +39,7 @@ export const getOneIp = async (connection: Connection) => {
   const qb = ipRepo.createQueryBuilder()
   const result = qb
     .select()
+    .where(`avaliable = ${AvaliableEnum.True}`)
     .orderBy({
       createtimestamp: `DESC`
     })

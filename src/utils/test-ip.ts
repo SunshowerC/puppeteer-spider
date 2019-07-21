@@ -4,9 +4,13 @@ import { AvaliableEnum, IpEntity } from 'config/entities/ip.entity'
 import { saveIps } from 'src/services/ip.service'
 import { Connection } from 'typeorm'
 
-export type TestResult = Pick<IpEntity, 'addr' | 'avaliable'>
+export type TestResult = Pick<IpEntity, 'addr' | 'avaliable' | 'origin'>
 
-const testPath = `http://icanhazip.com/`
+// const testPath = `http://icanhazip.com/`
+// const testPath = `http://httpbin.org/ip`
+// const testPath = `http://www.ip.cn`
+const testPath = `http://200019.ip138.com/`
+
 export const testIp = async (proxyAddr: string): Promise<TestResult> => {
   const ip = proxyAddr.startsWith('http') ? proxyAddr : `http://${proxyAddr}`
   return new Promise((resolve) => {
@@ -14,23 +18,42 @@ export const testIp = async (proxyAddr: string): Promise<TestResult> => {
       testPath,
       {
         proxy: ip.trim(),
-        timeout: 10000
+        timeout: 20000
       },
       (error, response, body) => {
+        let avaliable = AvaliableEnum.False
+        let origin = ''
+
+        // console.log('bobey', body)
         if (error) {
           logger.warn(`${ip} testIp failed`, {
             error: error.code
           })
           resolve({
             avaliable: AvaliableEnum.False,
-            addr: ip
+            addr: ip,
+            origin: ''
           })
         } else {
-          const valid = ip.includes(body.trim()) ? AvaliableEnum.True : AvaliableEnum.False
-          logger.info(`${ip} validate result:${valid}`)
-          resolve({
-            avaliable: valid,
-            addr: ip
+          // `http://icanhazip.com/`
+          // const valid = ip.includes(body.trim()) ? AvaliableEnum.True : AvaliableEnum.False
+          // logger.info(`${ip} validate result:${valid}`)
+          // resolve({
+          //   avaliable: valid,
+          //   addr: ip
+          // })
+
+          // http://200019.ip138.com/
+          const matchResult = body.match(/您的IP地址是：\[(.*)\] 来自：(.*)\s/)
+          if (matchResult) {
+            avaliable = ip.includes(matchResult[1]) ? AvaliableEnum.True : AvaliableEnum.False
+            origin = matchResult[2]
+          }
+          logger.info(`${origin} ${ip} validate result:${avaliable}`)
+          return resolve({
+            avaliable,
+            addr: ip,
+            origin
           })
         }
       }

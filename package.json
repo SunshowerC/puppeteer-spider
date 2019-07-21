@@ -5,8 +5,8 @@
   "scripts": {
     "lint": "eslint --fix 'src/**/*.{ts,tsx,js,jsx}'",
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
-    "start:sp": "ts-node -r tsconfig-paths/register src/ip-spider.ts",
-    "start:test": "ts-node -r tsconfig-paths/register src/utils/test-ip.ts",
+    "sp": "ts-node -r tsconfig-paths/register src/ip-spider.ts",
+    "test": "ts-node -r tsconfig-paths/register src/utils/test-ip.ts",
     "build": "rm -rf ./dist/ && tsc -p tsconfig.json"
   },
   "repository": {
