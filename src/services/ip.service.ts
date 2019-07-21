@@ -40,7 +40,7 @@ export const getOneIp = async (connection: Connection) => {
   const result = qb
     .select()
     .where(`avaliable = ${AvaliableEnum.True}`)
-    .andWhere(`origin REGEXP '移动|联通|电信|广电|通'`)
+    // .andWhere(`origin REGEXP '移动|联通|电信|广电|通'`)
     .orderBy({
       createtimestamp: `DESC`
     })

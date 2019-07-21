@@ -12,6 +12,7 @@ import { testIp } from './utils/test-ip'
 // 'https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=ip&rsv_pq=e085262200095771&rsv_t=df15%2Fsr0YRk9EFJpxBkKbLZbYB%2B3J33bcG8n1WWYyZSnyRASnjcw5pzv2vE&rqlang=cn&rsv_enter=1&rsv_sug3=2&rsv_sug1=1&rsv_sug7=100',
 
 const url = 'http://blog.sina.com.cn/s/blog_b0aef4ba0102yft3.html'
+// const url = `https://www.baidu.com`
 // `http://httpbin.org/ip`,
 
 const getAvaliableIp = async (connection: Connection): Promise<IpEntity> => {
@@ -36,11 +37,8 @@ const mainProcess = async (connection: Connection) => {
     headless: false,
     // devtools: true,
     // slowMo: 300,
-    args: [`--proxy-server=${ipObj.addr.slice(7)}`],
-    defaultViewport: {
-      width: 1200,
-      height: 800
-    }
+    ignoreHTTPSErrors: true,
+    args: [`--proxy-server=${ipObj.addr.slice(7)}`]
   })
 
   const page = await browser.newPage()
@@ -49,22 +47,60 @@ const mainProcess = async (connection: Connection) => {
 
   logger.info(`ua: ${ua}`)
 
-  await page.setUserAgent(ua)
+  await page.emulate({
+    viewport: {
+      width: 1000,
+      height: 600
+    },
+    userAgent: ua
+  })
 
   await page
     .goto(url, {
       waitUntil: 'domcontentloaded',
-      timeout: 20000
+      timeout: 40000
     })
-    .catch((e) => {
-      logger.warn('page.goto net work error', {
-        code: e.code
+    .catch(async (e) => {
+      logger.warn(' page.goto net work error', {
+        code: e.code,
+        ip: ipObj.addr
       })
+      await deleteIpById(connection, ipObj.id)
+      await browser.close()
+      return mainProcess(connection)
+    })
 
-      return browser.close().then(() => {
-        return mainProcess(connection)
-      })
+  await page
+    .goto('https://www.baidu.com', {
+      waitUntil: 'domcontentloaded'
     })
+    .catch(async (e) => {
+      logger.warn(' page.goto net work error', {
+        code: e.code,
+        ip: ipObj.addr
+      })
+      await deleteIpById(connection, ipObj.id)
+      await browser.close()
+      return mainProcess(connection)
+    })
+
+  // await page.waitForSelector(`#sina_keyword_ad_area2  a[href*="pipipan"]`)
+
+  // const obj = await page.evaluate((myFunctionText)=>{
+  //   const myFunction = new Function(' return (' + myFunctionText + ').apply(null, arguments)');
+  // return myFunction.call(null, `#sina_keyword_ad_area2  a[href*="pipipan"]`);
+  // }, getOffsetTopLeft.toString())
+  // console.log('点击对象', obj)
+
+  // await page.click(`#module_901 > div.SG_connBody > div > div.info_txt > div.info_btn1 > a`, {
+  //   delay: 98
+  // })
+
+  await sleep(1000)
+
+  // await page.click(`#sina_keyword_ad_area2  a[href*="pipipan"]`)
+
+  // page.click(`#free_down_link`)
 }
 
 async function main() {
