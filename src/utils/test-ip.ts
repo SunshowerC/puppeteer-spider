@@ -49,7 +49,9 @@ export const testIp = async (proxyAddr: string): Promise<TestResult> => {
             avaliable = ip.includes(matchResult[1]) ? AvaliableEnum.True : AvaliableEnum.False
             origin = matchResult[2]
           }
-          logger.info(`${origin} ${ip} validate result:${avaliable}`)
+          logger.info(`${origin} ${ip} validate result:${avaliable}`, {
+            body: avaliable === AvaliableEnum.False ? `CannotParseIP: ${body}` : undefined
+          })
           return resolve({
             avaliable,
             addr: ip,

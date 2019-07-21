@@ -32,7 +32,7 @@ const logger = createLogger({
     format.prettyPrint() // json 换行
     // format.json(), // json 格式
   ),
-  defaultMeta: { service: 'Bussiness logger' },
+  // defaultMeta: { service: 'Bussiness logger' },
   transports: rotateTransports
   // 如果是本地环境，抛出打印出错误信息。否则会被Winston 捕获并日志
   // exceptionHandlers:  [rotateTransports[0]]
