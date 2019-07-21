@@ -12,7 +12,7 @@ async function main() {
     headless: false,
     slowMo: 300,
     defaultViewport: {
-      width: 1000,
+      width: 1200,
       height: 800
     }
     // devtools: true

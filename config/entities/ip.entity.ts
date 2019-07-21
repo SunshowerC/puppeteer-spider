@@ -42,6 +42,13 @@ export class IpEntity extends BaseEntity {
     default: ''
   })
   downloaded: string
+
+  // 这个 ip 是在哪爬到的
+  @Column({
+    type: 'varchar',
+    default: ''
+  })
+  from: string
 } 
 
 
