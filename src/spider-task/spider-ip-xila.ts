@@ -4,6 +4,7 @@ import { sleep } from '../utils/common'
 import logger from '../services/logger'
 import { saveAvaliableIps } from '../utils/test-ip'
 
+// 全是国外的 ip ???
 const getIpPage = (num) => `http://www.xiladaili.com/gaoni/${num}/`
 
 export async function getIpFromXila(page: Page, connection: Connection) {

@@ -2,6 +2,7 @@ import { Connection } from 'typeorm'
 import { IpEntity } from 'config/entities/ip.entity'
 import logger from './logger'
 
+// 保存ip 到数据库
 export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) => {
   // const ipEntitys = ips.map(item => new IpEntity(item))
   const now = Math.floor(Date.now() / 1000)
@@ -28,4 +29,25 @@ export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) =>
     result: saveRes
   })
   return saveRes
+}
+
+// 获取ip
+export const getOneIp = async (connection: Connection) => {
+  const ipRepo = connection.getRepository(IpEntity)
+  const qb = ipRepo.createQueryBuilder()
+  const result = qb
+    .select()
+    .orderBy({
+      createtimestamp: `DESC`
+    })
+    .getOne()
+
+  return result
+}
+// 删除ip
+export const deleteIpById = async (connection: Connection, id: number) => {
+  const ipRepo = connection.getRepository(IpEntity)
+  return ipRepo.delete({
+    id
+  })
 }

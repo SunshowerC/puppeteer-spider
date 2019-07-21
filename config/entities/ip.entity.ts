@@ -29,6 +29,12 @@ export class IpEntity extends BaseEntity {
   })
   avaliable: number
 
+  // ip 所在地区
+  @Column({
+    type: 'varchar',
+    default: ''
+  })
+  origin: string
 
   // 已下载了的资源 id， 逗号切分 
   @Column({
