@@ -7,7 +7,8 @@
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
     "sp": "ts-node -r tsconfig-paths/register src/ip-spider.ts",
     "test": "ts-node -r tsconfig-paths/register src/utils/test-ip.ts",
-    "build": "rm -rf ./dist/ && tsc -p tsconfig.json"
+    "build": "rm -rf ./dist/ && tsc -p tsconfig.json",
+    "ts": "ts-node -r tsconfig-paths/register ./logs/test.ts"
   },
   "repository": {
     "type": "git",
