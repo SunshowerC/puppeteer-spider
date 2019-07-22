@@ -147,9 +147,12 @@ class Action {
 
 ;(async () => {
   const connection = await createConnection(ormconfig)
-
-  const action = await new Action(connection)
-  await action.run()
+  let action: Action
+  let times = 10
+  while (times--) {
+    action = new Action(connection)
+    await action.run()
+  }
 
   // await sleep(5000)
 
