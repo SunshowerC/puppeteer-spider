@@ -97,6 +97,8 @@ class Action {
       logger.warn('查不到网盘url, 可能是代理挂了.')
       return this.browser.close()
     }
+
+    logger.info('正在访问网盘 ...')
     await this.page.goto(panUrl, goOpt).catch(this.errorHandler.bind(this))
 
     await this.page.waitForSelector(`#free_down_link`)
