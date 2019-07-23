@@ -52,7 +52,7 @@ class Action {
 
     logger.info(`current ip:${this.ipObj.addr}`)
     this.browser = await puppeteer.launch({
-      // headless: false,
+      headless: false,
       // devtools: true,
       // slowMo: 300,
       ignoreHTTPSErrors: true,
@@ -98,14 +98,27 @@ class Action {
       return this.browser.close()
     }
 
-    logger.info('正在访问网盘 ...')
-    await this.page.goto(panUrl, goOpt).catch(this.errorHandler.bind(this))
+    logger.info(`正在访问网盘: ${panUrl}`)
+
+    await this.page.click(`#sina_keyword_ad_area2  a[href="${panUrl}"]`)
+    const response = await this.page.waitForNavigation(goOpt).catch(this.errorHandler.bind(this))
+
+    // const response = await this.page.goto(panUrl, goOpt).catch(this.errorHandler.bind(this))
+
+    if (response) {
+      logger.info('成功访问网盘')
+    } else {
+      logger.warn('失败访问网盘')
+      return false
+    }
 
     await this.page.waitForSelector(`#free_down_link`)
     await sleep(3000 + Math.random() * 3000)
 
     // 点击下载
-    // return this.page.click(`#free_down_link`)
+    await this.page.click(`#free_down_link`)
+    await sleep(10000 + Math.random() * 10000)
+    return true
   }
 
   // 刷新页面
@@ -139,11 +152,12 @@ class Action {
       })
       return null
     }
-    await this.go2Pan()
+    const panResult = await this.go2Pan()
 
-    await sleep(3000 + Math.random() * 13000)
+    await sleep(3000 + Math.random() * 3000)
 
-    // await this.browser.close()
+    panResult && logger.info('任务完成！\n\n')
+    await this.browser.close()
   }
 }
 
