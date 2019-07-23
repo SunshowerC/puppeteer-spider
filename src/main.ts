@@ -100,8 +100,10 @@ class Action {
 
     logger.info(`正在访问网盘: ${panUrl}`)
 
-    await this.page.click(`#sina_keyword_ad_area2  a[href="${panUrl}"]`)
-    const response = await this.page.waitForNavigation(goOpt).catch(this.errorHandler.bind(this))
+    const [response] = await Promise.all([
+      this.page.waitForNavigation(goOpt).catch(this.errorHandler.bind(this)),
+      this.page.click(`#sina_keyword_ad_area2  a[href="${panUrl}"]`)
+    ])
 
     // const response = await this.page.goto(panUrl, goOpt).catch(this.errorHandler.bind(this))
 
