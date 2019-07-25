@@ -174,5 +174,5 @@ class Action {
 
   // await sleep(5000)
 
-  logger.info('本次任务完成！')
+  logger.info('全部任务完成！')
 })()

@@ -11,9 +11,13 @@ export async function getIpFromQiyun(page: Page, connection: Connection) {
   let i = 0
   while (true) {
     i++
-    await page.goto(getIpPage(i), {
-      waitUntil: 'networkidle2'
-    })
+    await page
+      .goto(getIpPage(i), {
+        waitUntil: 'networkidle2'
+      })
+      .catch((e) => {
+        console.log('打开 齐云错误', e)
+      })
 
     sleep(2000)
     // 爬取得到当前页面所有 ip

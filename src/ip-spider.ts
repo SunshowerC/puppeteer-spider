@@ -10,7 +10,7 @@ import logger from './services/logger'
 async function main() {
   const connection = await createConnection(ormconfig)
   const browser = await puppeteer.launch({
-    headless: false,
+    // headless: false,
     // slowMo: 300,
     defaultViewport: {
       width: 1200,

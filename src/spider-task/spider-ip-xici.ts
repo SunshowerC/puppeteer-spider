@@ -11,9 +11,13 @@ export async function getIpFromXici(page: Page, connection: Connection) {
   let i = 0
   while (true) {
     i++
-    await page.goto(getIpPage(i), {
-      waitUntil: 'networkidle2'
-    })
+    await page
+      .goto(getIpPage(i), {
+        waitUntil: 'networkidle2'
+      })
+      .catch((e) => {
+        console.log('打开 xici 错误', e)
+      })
 
     // 爬取得到当前页面所有 ip
     const ips: any[] = await page.evaluate(() => {
