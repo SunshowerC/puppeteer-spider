@@ -1,5 +1,5 @@
 import { Connection } from 'typeorm'
-import { IpEntity, AvaliableEnum } from '../../config/entities/ip.entity'
+import { IpEntity } from '../../config/entities/ip.entity'
 import logger from './logger'
 
 // 保存ip 到数据库
@@ -10,9 +10,7 @@ export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) =>
   const keys = ['addr', 'avaliable', 'origin', 'createtimestamp', 'updatetimestamp']
 
   const valuesStr = ips
-    .map(
-      (ip) => `("${ip.addr}", ${ip.avaliable === 0 ? 0 : 1}, "${ip.origin || ''}", ${now}, ${now})`
-    )
+    .map((ip) => `("${ip.addr}", "${ip.origin || ''}", ${now}, ${now})`)
     .join(',')
 
   const saveRes = await connnect.query(`
@@ -23,7 +21,6 @@ export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) =>
       ${valuesStr}
     ON DUPLICATE KEY UPDATE
       addr = VALUES(addr),
-      avaliable = VALUES(avaliable),
       updatetimestamp = VALUES(updatetimestamp);  
   `)
 
@@ -36,17 +33,22 @@ export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) =>
 // 获取ip
 export const getOneIp = async (connection: Connection) => {
   const ipRepo = connection.getRepository(IpEntity)
-  const qb = ipRepo.createQueryBuilder()
-  const result = qb
-    .select()
-    .where(`avaliable = ${AvaliableEnum.True}`)
-    // .andWhere(`origin REGEXP '移动|联通|电信|广电|通'`)
-    .orderBy({
-      createtimestamp: `DESC`
-    })
-    .getOne()
+  // const qb = ipRepo.createQueryBuilder()
+  const result = ipRepo.query(`
+    SELECT * 
+    FROM ip_tab
+    ORDER BY RAND()
+    limit 1;
+  `)
+  // const result = qb
+  //   .select()
+  //   // .andWhere(`origin REGEXP '移动|联通|电信|广电|通'`)
+  //   .orderBy({
+  //     createtimestamp: `DESC`
+  //   })
+  //   .getOne()
 
-  return result
+  return result[0]
 }
 // 删除ip
 export const deleteIpById = async (connection: Connection, id: number) => {

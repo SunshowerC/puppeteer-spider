@@ -1,7 +1,7 @@
 import puppeteer, { Page, Browser, DirectNavigationOptions } from 'puppeteer'
 import { createConnection, Connection } from 'typeorm'
 import { ormconfig } from '../config/ormconfig'
-import { AvaliableEnum, IpEntity } from '../config/entities/ip.entity'
+import { IpEntity } from '../config/entities/ip.entity'
 import { sleep } from './utils/common'
 import { generateUserAgent } from './services/generate-ua'
 import logger from './services/logger'
@@ -24,7 +24,7 @@ const getAvaliableIp = async (connection: Connection): Promise<IpEntity> => {
   const ipObj = await getOneIp(connection)
   if (!ipObj) throw new Error('Ip 没了')
   const validResult = await testIp(ipObj.addr)
-  if (validResult.avaliable === AvaliableEnum.False) {
+  if (!validResult) {
     await deleteIpById(connection, ipObj.id)
     logger.info(`删除无效 ip: ${ipObj.addr}`, {
       ipObj

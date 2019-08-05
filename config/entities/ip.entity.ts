@@ -1,10 +1,6 @@
 import { Entity, Column } from "typeorm";
 import { BaseEntity } from "./base";
 
-export enum AvaliableEnum {
-  False = 0,
-  True = 1
-}
 
 @Entity({
   name: 'ip_tab'
@@ -23,11 +19,6 @@ export class IpEntity extends BaseEntity {
   })
   addr: string
 
-  @Column({
-    type: 'tinyint',
-    default: AvaliableEnum.True
-  })
-  avaliable: number
 
   // ip 所在地区
   @Column({
