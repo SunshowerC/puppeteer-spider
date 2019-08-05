@@ -2,7 +2,7 @@ import puppeteer, { Page, Browser, DirectNavigationOptions } from 'puppeteer'
 import { createConnection, Connection } from 'typeorm'
 import { ormconfig } from '../config/ormconfig'
 import { IpEntity } from '../config/entities/ip.entity'
-import { sleep } from './utils/common'
+import { sleep, getRandomOne } from './utils/common'
 import { generateUserAgent } from './services/generate-ua'
 import logger from './services/logger'
 import { getOneIp, deleteIpById } from './services/ip.service'
@@ -39,7 +39,20 @@ class Action {
   ipObj: IpEntity
   page: Page
 
-  constructor(public readonly connection: Connection, public ip?: string) {}
+  ip?: string
+  panUrl?: string
+  referer?: string
+
+  constructor(
+    public readonly connection: Connection,
+    public option: {
+      ip?: string
+      panUrl?: string
+      referer?: string
+    } = {}
+  ) {
+    Object.assign(this, option || {})
+  }
 
   private async init() {
     if (this.ip) {
@@ -52,7 +65,7 @@ class Action {
 
     logger.info(`current ip:${this.ipObj.addr}`)
     this.browser = await puppeteer.launch({
-      // headless: false,
+      headless: !process.argv.some((item) => item === '--debug'),
       // devtools: true,
       // slowMo: 300,
       ignoreHTTPSErrors: true,
@@ -77,6 +90,17 @@ class Action {
   private async go2Blog() {
     logger.info('正在访问 blog...')
     return this.page.goto(url, goOpt).catch(this.errorHandler.bind(this))
+  }
+
+  private async go2PanImmediately() {
+    const response = await this.page
+      .goto(this.panUrl!, {
+        ...goOpt,
+        referer: this.referer
+      })
+      .catch(this.errorHandler.bind(this))
+
+    return this.click2Download(response)
   }
 
   // 打开 网盘
@@ -114,6 +138,17 @@ class Action {
       return false
     }
 
+    return this.click2Download(response)
+  }
+
+  private async click2Download(response: any) {
+    if (response) {
+      logger.info('成功访问网盘')
+    } else {
+      logger.warn('失败访问网盘')
+      return false
+    }
+
     await this.page.waitForSelector(`#free_down_link`)
     await sleep(3000 + Math.random() * 3000)
 
@@ -144,15 +179,23 @@ class Action {
       userAgent: ua
     })
 
-    const result = await this.go2Blog()
-    // 访问失败
-    if (!result) {
-      logger.warn('访问博客失败', {
-        result
-      })
-      return null
+    let panResult: boolean | void
+
+    // 直接访问网盘
+    if (this.panUrl) {
+      panResult = await this.go2PanImmediately()
+    } else {
+      // 先访问 blog ， 再访问网盘
+      const result = await this.go2Blog()
+      // 访问失败
+      if (!result) {
+        logger.warn('访问博客失败', {
+          result
+        })
+        return null
+      }
+      panResult = await this.go2Pan()
     }
-    const panResult = await this.go2Pan()
 
     await sleep(3000 + Math.random() * 3000)
 
@@ -164,13 +207,34 @@ class Action {
 ;(async () => {
   const connection = await createConnection(ormconfig)
   let action: Action
-  let times = 10
+  let times = 1000
+
+  const panUrls = [
+    'https://u20959625.pipipan.com/fs/20959625-388895523',
+    'https://u20959625.pipipan.com/fs/20959625-388895521',
+    'https://u20959625.pipipan.com/fs/20959625-388895519',
+    'https://u20959625.pipipan.com/fs/20959625-388895517',
+    'https://u20959625.pipipan.com/fs/20959625-388895516',
+    'https://u20959625.pipipan.com/fs/20959625-388895514',
+    'https://u20959625.pipipan.com/fs/20959625-388895512',
+    'https://u20959625.pipipan.com/fs/20959625-388895510',
+    'https://u20959625.pipipan.com/fs/20959625-388895508',
+    'https://u20959625.pipipan.com/fs/20959625-388895507',
+    'https://u20959625.pipipan.com/fs/20959625-388895502',
+    'https://u20959625.pipipan.com/fs/20959625-388895500',
+    'https://u20959625.pipipan.com/fs/20959625-388895498',
+    'https://u20959625.pipipan.com/fs/20959625-388895493'
+  ]
+
   while (times--) {
-    action = new Action(connection)
+    action = new Action(connection, {
+      panUrl: getRandomOne(panUrls),
+      referer: 'http://blog.sina.com.cn/s/blog_b0aef4ba0102yft3.html'
+    })
     await action.run()
   }
 
   // await sleep(5000)
 
-  logger.info('全部任务完成！')
+  logger.info('============全部任务完成！============')
 })()

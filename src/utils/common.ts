@@ -11,6 +11,12 @@ export interface WeigthObj {
   value: any
 }
 
+export const getRandomOne = (arr: any[]): any => {
+  const len = arr.length
+  const randomIdx = Math.floor(Math.random() * len)
+  return arr[randomIdx]
+}
+
 export const getRandomItem = (arr: WeigthObj[]): WeigthObj['value'] => {
   const sumWeight = arr.reduce((prev, cur) => prev + cur.weigth, 0)
   let randomNum = Math.random() * sumWeight
