@@ -1,6 +1,6 @@
 import { createConnection } from 'typeorm'
 import puppeteer from 'puppeteer'
-import { ormconfig } from 'config/ormconfig'
+import { ormconfig } from '../config/ormconfig'
 import { getIpFromXila } from './spider-task/spider-ip-xila'
 import { getIpFromKuai } from './spider-task/spider-ip-kuai'
 import { getIpFromXici } from './spider-task/spider-ip-xici'

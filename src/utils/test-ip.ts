@@ -1,8 +1,8 @@
 import request from 'request'
-import logger from 'src/services/logger'
-import { AvaliableEnum, IpEntity } from 'config/entities/ip.entity'
-import { saveIps } from 'src/services/ip.service'
 import { Connection } from 'typeorm'
+import logger from '../services/logger'
+import { AvaliableEnum, IpEntity } from '../../config/entities/ip.entity'
+import { saveIps } from '../services/ip.service'
 
 export type TestResult = Pick<IpEntity, 'addr' | 'avaliable' | 'origin'>
 
@@ -38,7 +38,11 @@ export const testIp = async (proxyAddr: string): Promise<TestResult> => {
         } else {
           // `http://icanhazip.com/`
           const valid = ip.includes(body.trim()) ? AvaliableEnum.True : AvaliableEnum.False
-          logger.info(`${ip} validate result:${valid}`)
+          const logType = valid ? 'info' : 'warn'
+
+          logger[logType](`${ip} validate result:${valid}`, {
+            body: valid ? `CannotParseIP: ${body}` : undefined
+          })
           resolve({
             avaliable: valid,
             addr: ip,

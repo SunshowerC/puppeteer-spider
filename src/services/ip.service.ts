@@ -1,5 +1,5 @@
 import { Connection } from 'typeorm'
-import { IpEntity, AvaliableEnum } from 'config/entities/ip.entity'
+import { IpEntity, AvaliableEnum } from '../../config/entities/ip.entity'
 import logger from './logger'
 
 // 保存ip 到数据库
