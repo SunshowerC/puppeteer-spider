@@ -52,7 +52,7 @@ class Action {
 
     logger.info(`current ip:${this.ipObj.addr}`)
     this.browser = await puppeteer.launch({
-      headless: false,
+      // headless: false,
       // devtools: true,
       // slowMo: 300,
       ignoreHTTPSErrors: true,
@@ -135,8 +135,6 @@ class Action {
     await this.init()
 
     const ua = generateUserAgent()
-
-    logger.info(`ua: ${ua}`)
 
     await this.page.emulate({
       viewport: {

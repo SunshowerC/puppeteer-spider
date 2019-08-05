@@ -34,7 +34,7 @@ export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) =>
 export const getOneIp = async (connection: Connection) => {
   const ipRepo = connection.getRepository(IpEntity)
   // const qb = ipRepo.createQueryBuilder()
-  const result = ipRepo.query(`
+  const result: IpEntity[] = await ipRepo.query(`
     SELECT * 
     FROM ip_tab
     ORDER BY RAND()
