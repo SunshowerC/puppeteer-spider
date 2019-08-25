@@ -6,11 +6,10 @@ import { sleep, getRandomOne } from './utils/common'
 import { generateUserAgent } from './services/generate-ua'
 import logger from './services/logger'
 import { getOneIp, deleteIpById } from './services/ip.service'
-import { testIp } from './utils/test-ip'
 
 const goOpt: DirectNavigationOptions = {
   waitUntil: 'domcontentloaded',
-  timeout: 30000
+  timeout: 20000
 }
 // 'http://control.blog.sina.com.cn/blog_rebuild/blog/controllers/setpage.php?uid=2964255930&status=pageset',
 // 'https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=ip&rsv_pq=e085262200095771&rsv_t=df15%2Fsr0YRk9EFJpxBkKbLZbYB%2B3J33bcG8n1WWYyZSnyRASnjcw5pzv2vE&rqlang=cn&rsv_enter=1&rsv_sug3=2&rsv_sug1=1&rsv_sug7=100',
@@ -23,14 +22,17 @@ const url = 'http://blog.sina.com.cn/s/blog_b0aef4ba0102yft3.html'
 const getAvaliableIp = async (connection: Connection): Promise<IpEntity> => {
   const ipObj = await getOneIp(connection)
   if (!ipObj) throw new Error('Ip 没了')
-  const validResult = await testIp(ipObj.addr)
-  if (!validResult) {
-    await deleteIpById(connection, ipObj.id)
-    logger.info(`删除无效 ip: ${ipObj.addr}`, {
-      ipObj
-    })
-    return getAvaliableIp(connection)
-  }
+
+  // 默认认为 ip 有效，不再继续校验 ip
+  // const validResult = await testIp(ipObj.addr)
+  // if (!validResult) {
+  //   await deleteIpById(connection, ipObj.id)
+  //   logger.info(`删除无效 ip: ${ipObj.addr}`, {
+  //     ipObj
+  //   })
+  //   return getAvaliableIp(connection)
+  // }
+
   return ipObj
 }
 
@@ -197,8 +199,6 @@ class Action {
       panResult = await this.go2Pan()
     }
 
-    await sleep(3000 + Math.random() * 3000)
-
     panResult && logger.info('任务完成！\n\n')
     await this.browser.close()
   }
@@ -227,14 +227,13 @@ class Action {
   ]
 
   while (times--) {
+    logger.info(`time: ${times}`)
     action = new Action(connection, {
       panUrl: getRandomOne(panUrls),
       referer: 'http://blog.sina.com.cn/s/blog_b0aef4ba0102yft3.html'
     })
     await action.run()
   }
-
-  // await sleep(5000)
 
   logger.info('============全部任务完成！============')
 })()

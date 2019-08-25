@@ -7,7 +7,7 @@ export const saveIps = async (connnect: Connection, ips: Partial<IpEntity>[]) =>
   // const ipEntitys = ips.map(item => new IpEntity(item))
   const now = Math.floor(Date.now() / 1000)
 
-  const keys = ['addr', 'avaliable', 'origin', 'createtimestamp', 'updatetimestamp']
+  const keys = ['addr', 'origin', 'createtimestamp', 'updatetimestamp']
 
   const valuesStr = ips
     .map((ip) => `("${ip.addr}", "${ip.origin || ''}", ${now}, ${now})`)
