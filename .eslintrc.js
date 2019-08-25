@@ -3,7 +3,7 @@ module.exports = {
   env: {
     node: true
   },
-  extends: ['@finance/loan/typescript'],
+  extends: ['eslint-config-elegant/typescript'],
   rules: {
     'no-useless-constructor': 'off',
     'no-empty-function': ['error', { allow: ['constructors'] }],
