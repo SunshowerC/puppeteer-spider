@@ -1,35 +1,35 @@
 import UserAgent from 'user-agents'
 import faker from 'faker'
-import { WeigthObj, getRandomItem } from '../utils/common'
+import { WeightObj, getRandomItem } from '../utils/common'
 
-const chineseUas: WeigthObj[] = [
+const chineseUas: WeightObj<string>[] = [
   {
-    weigth: 15,
+    weight: 15,
     value: `360SE`
   },
   {
-    weigth: 10,
+    weight: 10,
     value: `SE 2.X MetaSr 3.2.124`
   },
   {
-    weigth: 10,
+    weight: 10,
     value: 'QQBrowser/6.5.9225.201'
   },
   {
-    weigth: 5,
+    weight: 5,
     value: `BAIDUBrowser 3.8.2311.100`
   },
   {
     value: `Maxthon/3.0 Safari/533.9`,
-    weigth: 10
+    weight: 10
   },
   {
     value: `UBrowser/4.0.3214.0 Safari/537.36`,
-    weigth: 10
+    weight: 10
   },
   {
     value: ``,
-    weigth: 45
+    weight: 45
   }
 ]
 
