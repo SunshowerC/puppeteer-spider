@@ -11,7 +11,7 @@ export interface WeigthObj {
   value: any
 }
 
-export const getRandomOne = (arr: any[]): any => {
+export const getRandomOne = <T>(arr: T[]): T => {
   const len = arr.length
   const randomIdx = Math.floor(Math.random() * len)
   return arr[randomIdx]

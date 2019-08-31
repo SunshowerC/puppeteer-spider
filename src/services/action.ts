@@ -1,0 +1,210 @@
+import puppeteer, { Page, Browser, DirectNavigationOptions } from 'puppeteer'
+import { Connection } from 'typeorm'
+import { ResourceEntity } from 'config/entities/resouce.entity'
+import { IpEntity } from '../../config/entities/ip.entity'
+import { generateUserAgent } from './generate-ua'
+import { getOneIp, deleteIpById } from './ip.service'
+import { sleep } from '../utils/common'
+import logger from './logger'
+
+const goOpt: DirectNavigationOptions = {
+  waitUntil: 'domcontentloaded',
+  timeout: 20000
+}
+
+const getAvaliableIp = async (connection: Connection): Promise<IpEntity> => {
+  const ipObj = await getOneIp(connection)
+  if (!ipObj) throw new Error('Ip 没了')
+
+  // 默认认为 ip 有效，不再继续校验 ip
+  // const validResult = await testIp(ipObj.addr)
+  // if (!validResult) {
+  //   await deleteIpById(connection, ipObj.id)
+  //   logger.info(`删除无效 ip: ${ipObj.addr}`, {
+  //     ipObj
+  //   })
+  //   return getAvaliableIp(connection)
+  // }
+
+  return ipObj
+}
+
+export class Action {
+  browser: Browser
+  ipObj: IpEntity
+  page: Page
+
+  ip?: string // 指定 ip 代理，如果未指定，自行去数据库取一个
+  panUrl?: string // 网盘下载页
+  referer?: string // 来源页
+  target: ResourceEntity
+
+  constructor(
+    public readonly connection: Connection,
+    public option: {
+      target: ResourceEntity
+      ip?: string
+    }
+  ) {
+    Object.assign(this, option || {})
+    this.panUrl = option.target.link
+    this.referer = option.target.from
+  }
+
+  private async init() {
+    if (this.ip) {
+      this.ipObj = new IpEntity({
+        addr: this.ip
+      })
+    } else {
+      this.ipObj = await getAvaliableIp(this.connection)
+    }
+
+    logger.info(`current ip:${this.ipObj.addr}`)
+    this.browser = await puppeteer.launch({
+      headless: !process.argv.some((item) => item === '--debug'),
+      // devtools: true,
+      // slowMo: 300,
+      ignoreHTTPSErrors: true,
+      args: [`--proxy-server=${this.ipObj.addr}`]
+      // args: [`--proxy-server=http://114.55.236.62:3128`]
+    })
+
+    this.page = await this.browser.newPage()
+    // page.on('console', (msg) => console.log('PAGE LOG:', msg.text()))
+  }
+
+  private async errorHandler(e) {
+    logger.warn(' page.goto net work error', {
+      code: e.code,
+      ip: this.ipObj.addr
+    })
+    await deleteIpById(this.connection, this.ipObj.id)
+    await this.browser.close()
+  }
+
+  // 打开 博客
+  private async go2Blog() {
+    logger.info('正在访问 blog...')
+    return this.page.goto(this.referer!, goOpt).catch(this.errorHandler.bind(this))
+  }
+
+  private async go2PanImmediately() {
+    const response = await this.page
+      .goto(this.panUrl!, {
+        ...goOpt,
+        referer: this.referer
+      })
+      .catch(this.errorHandler.bind(this))
+
+    return this.click2Download(response)
+  }
+
+  // 打开 网盘
+  private async go2Pan() {
+    const link = `#sina_keyword_ad_area2  a[href*="pipipan"]`
+
+    const panUrl = await this.page.evaluate((passLink) => {
+      const elems = document.querySelectorAll<HTMLElement>(passLink)
+      if (elems && elems.length > 0) {
+        const randomIndex = Math.floor(Math.random() * elems.length)
+
+        return elems[randomIndex].getAttribute('href')
+      }
+      return ''
+    }, link)
+
+    if (!panUrl) {
+      logger.warn('查不到网盘url, 可能是代理挂了.')
+      return this.browser.close()
+    }
+
+    logger.info(`正在访问网盘: ${panUrl}`)
+
+    const [response] = await Promise.all([
+      this.page.waitForNavigation(goOpt).catch(this.errorHandler.bind(this)),
+      this.page.click(`#sina_keyword_ad_area2  a[href="${panUrl}"]`)
+    ])
+
+    // const response = await this.page.goto(panUrl, goOpt).catch(this.errorHandler.bind(this))
+
+    if (response) {
+      logger.info('成功访问网盘')
+    } else {
+      logger.warn('失败访问网盘')
+      return false
+    }
+
+    return this.click2Download(response)
+  }
+
+  private async click2Download(response: any) {
+    if (response) {
+      logger.info('成功访问网盘')
+    } else {
+      logger.warn('失败访问网盘')
+      return false
+    }
+
+    await this.page.waitForSelector(`#free_down_link`)
+    await sleep(3000 + Math.random() * 3000)
+
+    // 点击下载
+    await this.page.click(`#free_down_link`)
+    await sleep(10000 + Math.random() * 10000)
+    return true
+  }
+
+  // 刷新页面
+  private async reloadPage(i = 50) {
+    while (i--) {
+      await this.page.reload(goOpt)
+    }
+  }
+
+  // 执行程序
+  async run() {
+    await this.init()
+
+    const ua = generateUserAgent()
+
+    await this.page.emulate({
+      viewport: {
+        width: 1000,
+        height: 600
+      },
+      userAgent: ua
+    })
+
+    let panResult: boolean | void
+
+    // 直接访问网盘
+    if (this.panUrl) {
+      panResult = await this.go2PanImmediately()
+    } else {
+      // 先访问 blog ， 再访问网盘
+      const result = await this.go2Blog()
+      // 访问失败
+      if (!result) {
+        logger.warn('访问博客失败', {
+          result
+        })
+        return null
+      }
+      panResult = await this.go2Pan()
+    }
+
+    if (panResult) {
+      const resRepo = await this.connection.getRepository(ResourceEntity)
+
+      this.target.download += 1
+
+      await resRepo.save(this.target)
+
+      logger.info(`任务完成！\n\n`, {
+        name: this.target.name
+      })
+    }
+    await this.browser.close()
+  }
+}
