@@ -179,9 +179,10 @@ export class Action {
     if (this.panUrl) {
       panResult = await this.go2PanImmediately().catch((e) => {
         logger.error('go2PanImmediately error ', {
-          error: e
+          error: e,
+          ip: this.ipObj.addr
         })
-        return false
+        return this.errorHandler(e)
       })
     } else {
       // 先访问 blog ， 再访问网盘
