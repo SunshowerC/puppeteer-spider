@@ -38,5 +38,12 @@ export class ResourceEntity extends BaseEntity {
     type: 'int'
   })
   download: number
+
+  // 当周被下载的次数
+  @Column({
+    type: 'int',
+    name: `weekly_download`
+  })
+  weeklyDownload: number
 } 
 

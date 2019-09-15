@@ -7,6 +7,8 @@ import { getOneIp, deleteIpById } from './ip.service'
 import { sleep } from '../utils/common'
 import logger from './logger'
 
+const noProxy = process.argv.some((item) => item === '--no-proxy')
+
 const goOpt: DirectNavigationOptions = {
   waitUntil: 'domcontentloaded',
   timeout: 20000
@@ -66,7 +68,7 @@ export class Action {
       // devtools: true,
       // slowMo: 300,
       ignoreHTTPSErrors: true,
-      args: [`--proxy-server=${this.ipObj.addr}`]
+      args: [noProxy ? '' : `--proxy-server=${this.ipObj.addr}`]
       // args: [`--proxy-server=http://114.55.236.62:3128`]
     })
 
@@ -128,13 +130,6 @@ export class Action {
 
     // const response = await this.page.goto(panUrl, goOpt).catch(this.errorHandler.bind(this))
 
-    if (response) {
-      logger.info('成功访问网盘')
-    } else {
-      logger.warn('失败访问网盘')
-      return false
-    }
-
     return this.click2Download(response)
   }
 
@@ -145,12 +140,14 @@ export class Action {
       logger.warn('失败访问网盘')
       return false
     }
+    const downloadSelector = `#main-content > div > div > div:nth-child(5) > div:nth-child(1) > div.card-body.position-relative > button`
+    // await sleep(30 * 1000)
 
-    await this.page.waitForSelector(`#free_down_link`)
+    await this.page.waitForSelector(downloadSelector)
     await sleep(3000 + Math.random() * 3000)
 
     // 点击下载
-    await this.page.click(`#free_down_link`)
+    await this.page.click(downloadSelector)
     await sleep(10000 + Math.random() * 10000)
     return true
   }
@@ -180,7 +177,12 @@ export class Action {
 
     // 直接访问网盘
     if (this.panUrl) {
-      panResult = await this.go2PanImmediately()
+      panResult = await this.go2PanImmediately().catch((e) => {
+        logger.error('go2PanImmediately error ', {
+          error: e
+        })
+        return false
+      })
     } else {
       // 先访问 blog ， 再访问网盘
       const result = await this.go2Blog()
@@ -197,6 +199,15 @@ export class Action {
     if (panResult) {
       const resRepo = await this.connection.getRepository(ResourceEntity)
 
+      // 如果是周一，且 weekly_download 不为0，复位 weekly_download
+      // 其他时间同时 weekly_download+1
+
+      if (new Date().getDay() === 1) {
+        this.target.weeklyDownload = 0
+      } else {
+        this.target.weeklyDownload += 1
+      }
+
       this.target.download += 1
 
       await resRepo.save(this.target)
@@ -206,5 +217,7 @@ export class Action {
       })
     }
     await this.browser.close()
+
+    return !!panResult
   }
 }
