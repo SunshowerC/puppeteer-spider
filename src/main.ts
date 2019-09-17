@@ -12,7 +12,7 @@ const main = async () => {
   let successCount = 0
 
   const resRepo = connection.getRepository(ResourceEntity)
-  const [resouces] = await resRepo.findAndCount()
+  let [resouces] = await resRepo.findAndCount()
 
   // 计算出全部下载次数
   const totalDownload = resouces.reduce((prev, cur) => {
@@ -32,6 +32,7 @@ const main = async () => {
     // 太晚了，都睡觉了，不下载
     if (new Date().getHours() < 10) {
       await sleep(2 * 3600 * 1000)
+      logger.info(`睡眠时间：${new Date()}`)
       continue
     }
 
@@ -46,7 +47,12 @@ const main = async () => {
     })
     const result = await action.run()
 
-    result === true && successCount++
+    if (result === true) {
+      successCount++
+      // 如果下载成功，重新拉取 db 数据
+      const [tempResult] = await resRepo.findAndCount()
+      resouces = tempResult
+    }
   }
 
   logger.info('============全部任务完成！============')

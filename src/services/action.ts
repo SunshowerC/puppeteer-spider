@@ -213,7 +213,7 @@ export class Action {
 
       await resRepo.save(this.target)
 
-      logger.info(`任务完成！\n\n`, {
+      logger.info(`任务完成！`, {
         name: this.target.name
       })
     }
