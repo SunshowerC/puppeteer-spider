@@ -1,6 +1,6 @@
 import puppeteer, { Page, Browser, DirectNavigationOptions } from 'puppeteer'
 import { Connection } from 'typeorm'
-import { ResourceEntity } from 'config/entities/resouce.entity'
+import { ResourceEntity } from '../../config/entities/resouce.entity'
 import { IpEntity } from '../../config/entities/ip.entity'
 import { generateUserAgent } from './generate-ua'
 import { getOneIp, deleteIpById } from './ip.service'
