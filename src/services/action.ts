@@ -184,18 +184,19 @@ export class Action {
         })
         return this.errorHandler(e)
       })
-    } else {
-      // 先访问 blog ， 再访问网盘
-      const result = await this.go2Blog()
-      // 访问失败
-      if (!result) {
-        logger.warn('访问博客失败', {
-          result
-        })
-        return null
-      }
-      panResult = await this.go2Pan()
     }
+    // else {
+    //   // 先访问 blog ， 再访问网盘
+    //   const result = await this.go2Blog()
+    //   // 访问失败
+    //   if (!result) {
+    //     logger.warn('访问博客失败', {
+    //       result
+    //     })
+    //     return null
+    //   }
+    //   panResult = await this.go2Pan()
+    // }
 
     if (panResult) {
       const resRepo = await this.connection.getRepository(ResourceEntity)

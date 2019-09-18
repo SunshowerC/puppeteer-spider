@@ -20,7 +20,7 @@ const main = async () => {
   }, 0)
 
   // 计算出权重，下载次数越多， 权重越低， 某个资源下载次数过多
-  const resoucesWithWeight: WeightObj<ResourceEntity>[] = resouces.map((item) => {
+  let resoucesWithWeight: WeightObj<ResourceEntity>[] = resouces.map((item) => {
     // 如果当周还没下载过，权重增加
     return {
       weight: item.weeklyDownload === 0 ? 10000 : totalDownload - item.download,
@@ -52,6 +52,16 @@ const main = async () => {
       // 如果下载成功，重新拉取 db 数据
       const [tempResult] = await resRepo.findAndCount()
       resouces = tempResult
+
+      resoucesWithWeight = resouces.map((item) => {
+        // 如果当周还没下载过，权重增加
+        return {
+          weight: item.weeklyDownload === 0 ? 10000 : totalDownload - item.download,
+          value: item
+        }
+      })
+
+      // TODO: 下载成功，不用代理ip 刷博客页 10 次
     }
   }
 
