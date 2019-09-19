@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'puppeteer',
       script: './dist/src/main.js',
-      instances: 1,
+      instances: 2,
 
       autorestart: true,
       watch: false,

@@ -1,6 +1,6 @@
 import { createConnection } from 'typeorm'
 import { ormconfig } from '../config/ormconfig'
-import { getRandomItem, WeightObj, sleep } from './utils/common'
+import { getRandomItem, WeightObj, sleep, getRandomOne } from './utils/common'
 import logger from './services/logger'
 import { ResourceEntity } from '../config/entities/resouce.entity'
 import { Action } from './services/action'
@@ -61,7 +61,12 @@ const main = async () => {
         }
       })
 
-      // TODO: 下载成功，不用代理ip 刷博客页 10 次
+      // 下载成功，不用代理ip 刷博客页 10+ 次
+      const reloadAc = new Action(connection, {
+        target: curPanObj,
+        noProxy: true
+      })
+      await reloadAc.reloadPage(getRandomOne([11, 12, 13, 14]))
     }
   }
 

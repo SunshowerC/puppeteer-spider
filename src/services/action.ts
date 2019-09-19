@@ -37,6 +37,7 @@ export class Action {
   page: Page
 
   ip?: string // 指定 ip 代理，如果未指定，自行去数据库取一个
+  noProxy?: boolean // 是否使用代理
   panUrl?: string // 网盘下载页
   referer?: string // 来源页
   target: ResourceEntity
@@ -46,6 +47,7 @@ export class Action {
     public option: {
       target: ResourceEntity
       ip?: string
+      noProxy?: boolean
     }
   ) {
     Object.assign(this, option || {})
@@ -68,7 +70,7 @@ export class Action {
       // devtools: true,
       // slowMo: 300,
       ignoreHTTPSErrors: true,
-      args: [noProxy ? '' : `--proxy-server=${this.ipObj.addr}`]
+      args: [noProxy || this.noProxy ? '' : `--proxy-server=${this.ipObj.addr}`]
       // args: [`--proxy-server=http://114.55.236.62:3128`]
     })
 
@@ -153,10 +155,27 @@ export class Action {
   }
 
   // 刷新页面
-  private async reloadPage(i = 50) {
+  async reloadPage(i: number) {
+    await this.init()
+
+    const ua = generateUserAgent()
+
+    await this.page.emulate({
+      viewport: {
+        width: 1000,
+        height: 600
+      },
+      userAgent: ua
+    })
+
+    await this.go2Blog()
+
     while (i--) {
       await this.page.reload(goOpt)
+      await sleep(1000)
     }
+
+    await this.browser.close()
   }
 
   // 执行程序
@@ -185,18 +204,6 @@ export class Action {
         return this.errorHandler(e)
       })
     }
-    // else {
-    //   // 先访问 blog ， 再访问网盘
-    //   const result = await this.go2Blog()
-    //   // 访问失败
-    //   if (!result) {
-    //     logger.warn('访问博客失败', {
-    //       result
-    //     })
-    //     return null
-    //   }
-    //   panResult = await this.go2Pan()
-    // }
 
     if (panResult) {
       const resRepo = await this.connection.getRepository(ResourceEntity)
