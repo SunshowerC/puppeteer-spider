@@ -12,6 +12,12 @@ export class ResourceEntity extends BaseEntity {
     partial && Object.assign(this, partial)
   }
 
+  // 资源名称
+  @Column({
+    type: 'varchar',
+  })
+  name: string  
+
   // 资源链接
   @Column({
     type: 'varchar',
@@ -20,16 +26,24 @@ export class ResourceEntity extends BaseEntity {
   })
   link: string
 
+  // 资源来源页
   @Column({
-    type: 'int',
+    type: 'varchar',
+    length: 200,
   })
-  visit: number
+  from: string
 
   // 被下载的次数
   @Column({
     type: 'int'
   })
   download: number
-} 
 
+  // 当周被下载的次数
+  @Column({
+    type: 'int',
+    name: `weekly_download`
+  })
+  weeklyDownload: number
+} 
 

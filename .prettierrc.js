@@ -1,1 +1,1 @@
-module.exports = require('@finance/eslint-config-loan/.prettierrc');
+module.exports = require('eslint-config-elegant/.prettierrc');

@@ -1,10 +1,10 @@
 import request from 'request'
-import logger from 'src/services/logger'
-import { AvaliableEnum, IpEntity } from 'config/entities/ip.entity'
-import { saveIps } from 'src/services/ip.service'
 import { Connection } from 'typeorm'
+import logger from '../services/logger'
+import { IpEntity } from '../../config/entities/ip.entity'
+import { saveIps } from '../services/ip.service'
 
-export type TestResult = Pick<IpEntity, 'addr' | 'avaliable' | 'origin'>
+export type TestResult = Pick<IpEntity, 'addr' | 'origin'>
 
 const testPath = `https://icanhazip.com/`
 // const testPath = `http://httpbin.org/ip`
@@ -12,7 +12,7 @@ const testPath = `https://icanhazip.com/`
 
 // const testPath = `http://200019.ip138.com/`  // 带地区的
 
-export const testIp = async (proxyAddr: string): Promise<TestResult> => {
+export const testIp = async (proxyAddr: string): Promise<TestResult | null> => {
   const ip = proxyAddr.startsWith('http') ? proxyAddr : `http://${proxyAddr}`
   return new Promise((resolve) => {
     request.get(
@@ -22,7 +22,6 @@ export const testIp = async (proxyAddr: string): Promise<TestResult> => {
         timeout: 20000
       },
       (error, response, body) => {
-        const avaliable = AvaliableEnum.False
         const origin = ''
 
         // console.log('bobey', body)
@@ -31,19 +30,25 @@ export const testIp = async (proxyAddr: string): Promise<TestResult> => {
             error: error.code
           })
           resolve({
-            avaliable,
             addr: ip,
             origin
           })
         } else {
           // `http://icanhazip.com/`
-          const valid = ip.includes(body.trim()) ? AvaliableEnum.True : AvaliableEnum.False
-          logger.info(`${ip} validate result:${valid}`)
-          resolve({
-            avaliable: valid,
-            addr: ip,
-            origin: ''
+          const valid = ip.includes(body.trim())
+          const logType = valid ? 'info' : 'warn'
+
+          logger[logType](`${ip} validate result:${valid}`, {
+            body: valid ? `CannotParseIP: ${body}` : undefined
           })
+          resolve(
+            valid
+              ? {
+                  addr: ip,
+                  origin: ''
+                }
+              : null
+          )
 
           // http://200019.ip138.com/
           // const matchResult = body.match(/您的IP地址是：\[(.*)\] 来自：(.*)\s/)
@@ -71,7 +76,7 @@ export const saveAvaliableIps = async (connection: Connection, ips: string[]): P
   // 带校验结果的所有 ip
   const allIpsWithAvaliable = await Promise.all(allValidProm)
   // 有效的 ip
-  const avaliableIps = allIpsWithAvaliable.filter((item) => item.avaliable)
+  const avaliableIps = allIpsWithAvaliable.filter(Boolean) as Pick<IpEntity, 'addr' | 'origin'>[]
 
   logger.info(`all ips: ${allIpsWithAvaliable.length}, avaliable ips: ${avaliableIps.length}`, {
     avaliableIps
