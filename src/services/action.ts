@@ -16,7 +16,11 @@ const goOpt: DirectNavigationOptions = {
 
 const getAvaliableIp = async (connection: Connection): Promise<IpEntity> => {
   const ipObj = await getOneIp(connection)
-  if (!ipObj) throw new Error('Ip 没了')
+  if (!ipObj) {
+    // 没有 ip, 休息一下，等 ip 来
+    await sleep(2 * 3600 * 1000)
+    throw new Error('Ip 没了')
+  }
 
   // 默认认为 ip 有效，不再继续校验 ip
   // const validResult = await testIp(ipObj.addr)
