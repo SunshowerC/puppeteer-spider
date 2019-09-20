@@ -222,8 +222,12 @@ export class Action {
       await resRepo.save(this.target)
 
       logger.info(`任务完成！`, {
-        name: this.target.name
+        name: this.target.name,
+        ip: this.ipObj.addr
       })
+
+      // 成功了，也删除 ip
+      await deleteIpById(this.connection, this.ipObj.id)
     }
     await this.browser.close()
 
