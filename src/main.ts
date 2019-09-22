@@ -30,13 +30,17 @@ const main = async () => {
 
   while (++times) {
     // 太晚了，都睡觉了，不下载
-    if (new Date().getHours() < 10) {
+    const now = new Date()
+    const hour = now.getHours()
+    if (hour < 10) {
       await sleep(2 * 3600 * 1000)
       logger.info(`睡眠时间：${new Date()}`)
       continue
     }
 
-    logger.info(`time: ${times}; successCount: ${successCount}`)
+    logger.info(`time: ${times}; successCount: ${successCount}`, {
+      hour
+    })
     const curPanObj = getRandomItem(resoucesWithWeight)
     logger.info('Get random pan obj', {
       link: curPanObj.link,
