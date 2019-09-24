@@ -33,7 +33,7 @@ const main = async () => {
     const now = new Date()
     const hour = now.getHours()
     if (hour < 10) {
-      await sleep(2 * 3600 * 1000)
+      await sleep(1 * 3600 * 1000)
       logger.info(`睡眠时间：${new Date()}`)
       continue
     }
@@ -60,7 +60,7 @@ const main = async () => {
       resoucesWithWeight = resouces.map((item) => {
         // 如果当周还没下载过，权重增加
         return {
-          weight: item.weeklyDownload === 0 ? 10000 : totalDownload - item.download,
+          weight: item.weeklyDownload === 0 ? 10000 : 1 / item.download,
           value: item
         }
       })
