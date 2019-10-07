@@ -14,12 +14,13 @@ const goOpt: DirectNavigationOptions = {
   timeout: 20000
 }
 
-const getAvaliableIp = async (connection: Connection): Promise<IpEntity> => {
+const getAvaliableIp = async (connection: Connection): Promise<IpEntity | null> => {
   const ipObj = await getOneIp(connection)
   if (!ipObj) {
     // 没有 ip, 休息一下，等 ip 来
-    await sleep(2 * 3600 * 1000)
-    throw new Error('Ip 没了')
+    // await sleep(2 * 3600 * 1000)
+    logger.info('IP 不存在')
+    return null
   }
 
   // 默认认为 ip 有效，不再继续校验 ip
@@ -65,7 +66,9 @@ export class Action {
         addr: this.ip
       })
     } else {
-      this.ipObj = await getAvaliableIp(this.connection)
+      const ipResult = await getAvaliableIp(this.connection)
+      if (!ipResult) return false
+      this.ipObj = ipResult
     }
 
     logger.info(`current ip:${this.ipObj.addr}`)
@@ -79,6 +82,8 @@ export class Action {
     })
 
     this.page = await this.browser.newPage()
+
+    return true
     // page.on('console', (msg) => console.log('PAGE LOG:', msg.text()))
   }
 
@@ -184,7 +189,11 @@ export class Action {
 
   // 执行程序
   async run() {
-    await this.init()
+    const initResult = await this.init()
+    if (!initResult) {
+      await sleep(60 * 1000)
+      return false
+    }
 
     const ua = generateUserAgent()
 
